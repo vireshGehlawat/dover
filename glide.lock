@@ -1,6 +1,8 @@
-hash: 597b234cc3696cc2d1ffa6850d75e49b4efd293676c90cfc65c449eb41577a27
-updated: 2021-01-07T14:34:44.369898-10:00
+hash: 54d30ae877af679ec6e7d0cd377bc7838102eeb0cb48200c63a8b9152ffee915
+updated: 2021-01-07T14:46:20.908594-10:00
 imports:
+- name: github.com/go-sql-driver/mysql
+  version: 17ef3dd9d98b69acec3e85878995ada9533a9370
 - name: github.com/google/uuid
   version: 0e4e31197428a347842d152773b4cace4645ca25
 - name: github.com/gorilla/mux

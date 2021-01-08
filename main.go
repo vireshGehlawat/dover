@@ -3,9 +3,9 @@ package main
 import (
 	"dover/api"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3"
 	"net/http"
 	"time"
 )
@@ -14,7 +14,7 @@ func main() {
 
 	r := mux.NewRouter()
 
-	db := sqlx.MustConnect("sqlite3", ":memory:")
+	db := sqlx.MustConnect("mysql", "root@(localhost:3306)/dover")
 	fmt.Println(db.Ping())
 
 	// add proper initialization flow

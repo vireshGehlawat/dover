@@ -1,3 +1,9 @@
+## Implementation details
+Libraries that I've used in the implementation
+- github.com/gorilla/mux - Allows easy setup for API routes for a webapp.
+- github.com/jmoiron/sqlx - Lightweight ORM
+- github.com/go-sql-driver/mysql - mysql driver
+
 ## Components
 
 The follow sections detail the requirements for the three portions of the

@@ -14,43 +14,42 @@ import (
 )
 
 func main() {
-
-	r := mux.NewRouter()
-
 	db := sqlx.MustConnect("mysql", "root@(localhost:3306)/dover")
-	fmt.Println(db.Ping())
+	if len(os.Args) == 1 {
+		// init API and block to listen
+		initializeForAPIRole(db)
+	}
+	cliArguments := os.Args[1:]
+	ingestion := services.New(db)
+	if cliArguments[0] == "ingestprofiles" {
+		if len(cliArguments) < 2 {
+			fmt.Println("invalid usage of the role, sample start command\n" +
+				" ./main ingestprofiles ./path/to/file.json\n")
+			return
+		}
+		file, err := os.Open(cliArguments[1])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer file.Close()
+		scanner := bufio.NewScanner(file)
+		err = ingestion.IngestBulk(scanner)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
 
-	// add proper initialization flow
+func initializeForAPIRole(*sqlx.DB) {
+	// add proper initialization flow for router
+	r := mux.NewRouter()
 	api.InitializeRoutes(r, api.New())
 	srv := &http.Server{
 		Handler:      r,
 		Addr:         "127.0.0.1:8000",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
-	}
-	// initialize command line utils
-	cliArguments := os.Args[1:]
-	ingestion := services.New(db)
-	if len(cliArguments) > 0 {
-		if cliArguments[0] == "ingestprofiles" {
-			file, err := os.Open(cliArguments[1])
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			defer file.Close()
-			scanner := bufio.NewScanner(file)
-			for scanner.Scan() {
-				err := ingestion.Ingest(scanner.Text())
-				if err != nil {
-					fmt.Println(err)
-				}
-			}
-			if err := scanner.Err(); err != nil {
-				fmt.Println(err)
-				return
-			}
-		}
 	}
 	fmt.Println(srv.ListenAndServe())
 }

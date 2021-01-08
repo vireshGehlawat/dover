@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bufio"
 	"dover/models"
 	"encoding/json"
 	"fmt"
@@ -8,7 +9,7 @@ import (
 )
 
 type IngestionService interface {
-	IngestBulk(records []string) error
+	IngestBulk(records *bufio.Scanner) error
 	Ingest(record string) error
 }
 
@@ -22,10 +23,18 @@ func New(d *sqlx.DB) IngestionService {
 	}
 }
 
-func (s *ingestionService) IngestBulk(records []string) error {
-	for _, record := range records {
-		profile, educations, positions, err := s.parseRecord(record)
-		fmt.Println(profile, educations, positions, err)
+func (s *ingestionService) IngestBulk(scanner *bufio.Scanner) error {
+	for scanner.Scan() {
+		// best effort to ingest all records
+		err := s.Ingest(scanner.Text())
+		if err != nil {
+			// error logged to console and returned later as aggregated
+			fmt.Println(err)
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Println(err)
+		return err
 	}
 	return nil
 }

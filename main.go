@@ -4,6 +4,8 @@ import (
 	"dover/api"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/mattn/go-sqlite3"
 	"net/http"
 	"time"
 )
@@ -11,6 +13,9 @@ import (
 func main() {
 
 	r := mux.NewRouter()
+
+	db := sqlx.MustConnect("sqlite3", ":memory:")
+	fmt.Println(db.Ping())
 
 	// add proper initialization flow
 	api.InitializeRoutes(r, api.New())

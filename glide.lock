@@ -1,10 +1,16 @@
-hash: ca382638422c00ec8146c37ea8387c4e9aa2eb73b470da49cdb5fab301979025
-updated: 2021-01-07T14:22:52.389779-10:00
+hash: 597b234cc3696cc2d1ffa6850d75e49b4efd293676c90cfc65c449eb41577a27
+updated: 2021-01-07T14:34:44.369898-10:00
 imports:
 - name: github.com/google/uuid
   version: 0e4e31197428a347842d152773b4cace4645ca25
 - name: github.com/gorilla/mux
   version: 98cb6bf42e086f6af920b965c38cacc07402d51b
+- name: github.com/jmoiron/sqlx
+  version: d161d7a76b5661016ad0b085869f77fd410f3e6a
+  subpackages:
+  - reflectx
+- name: github.com/mattn/go-sqlite3
+  version: baaf8a978416040e7f2d00ac36e345098d0588d8
 - name: github.com/pborman/uuid
   version: 5b6091a6a160ee5ce12917b21ab96acec2a4fdc0
 testImports: []

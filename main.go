@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"dover/api"
+	"dover/services"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -28,8 +29,8 @@ func main() {
 		ReadTimeout:  15 * time.Second,
 	}
 	// initialize command line utils
-
 	cliArguments := os.Args[1:]
+	ingestion := services.New(db)
 	if len(cliArguments) > 0 {
 		if cliArguments[0] == "ingestprofiles" {
 			file, err := os.Open(cliArguments[1])
@@ -40,7 +41,10 @@ func main() {
 			defer file.Close()
 			scanner := bufio.NewScanner(file)
 			for scanner.Scan() {
-				fmt.Println(scanner.Text())
+				err := ingestion.Ingest(scanner.Text())
+				if err != nil {
+					fmt.Println(err)
+				}
 			}
 			if err := scanner.Err(); err != nil {
 				fmt.Println(err)
@@ -48,6 +52,5 @@ func main() {
 			}
 		}
 	}
-
 	fmt.Println(srv.ListenAndServe())
 }

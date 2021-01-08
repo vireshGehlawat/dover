@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"log"
+	"strings"
 )
 
 type IngestionService interface {
@@ -17,9 +19,19 @@ type ingestionService struct {
 	DB *sqlx.DB
 }
 
-func New(d *sqlx.DB) IngestionService {
+func New(db *sqlx.DB) IngestionService {
+	_, err := db.Query("select * from Profile")
+	if err != nil {
+		if strings.Contains(err.Error(), "doesn't exist") {
+			db.MustExec(models.ProfileSchema)
+			db.MustExec(models.EducationSchema)
+			db.MustExec(models.PositionSchema)
+		} else {
+			log.Fatal(err)
+		}
+	}
 	return &ingestionService{
-		DB: d,
+		DB: db,
 	}
 }
 
@@ -40,11 +52,50 @@ func (s *ingestionService) IngestBulk(scanner *bufio.Scanner) error {
 }
 
 func (s *ingestionService) Ingest(record string) error {
-	_, positions, _, _ := s.parseRecord(record)
-	for _, position := range positions {
-		fmt.Println(position)
+	profile, educations, positions, err := s.parseRecord(record)
+	// parsing err
+	if err != nil {
+		return err
 	}
-	return nil
+	tx := s.DB.MustBegin()
+	dbRecord, err := tx.Exec(fmt.Sprintf("INSERT INTO Profile (LastName, FirstName, Skills) VALUES (\"%s\", \"%s\", \"%s\")", profile.LastName, profile.FirstName, profile.Skills))
+	if err != nil {
+		tx.Rollback()
+		fmt.Println(err)
+		return err
+	}
+	profileID, err := dbRecord.LastInsertId()
+	for _, e := range educations {
+		e.ProfileID = uint64(profileID)
+		// todo fix NULLable date fields
+		_, err := tx.Exec(fmt.Sprintf(
+			"INSERT INTO Education "+
+				"(ProfileID, EndDate, StartDate, DegreeName, FieldOfStudy, SchoolName) "+
+				"VALUES (\"%d\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\")",
+			e.ProfileID, e.EndDate.Time.Format("2006-01-02"), e.StartDate.Time.Format("2006-01-02"), e.DegreeName, e.FieldOfStudy, e.SchoolName),
+		)
+		if err != nil {
+			tx.Rollback()
+			fmt.Println(err)
+			return err
+		}
+	}
+	for _, p := range positions {
+		p.ProfileID = uint64(profileID)
+		// todo fix NULLable date fields
+		_, err := tx.Exec(fmt.Sprintf(
+			"INSERT INTO Position "+
+				"(ProfileID, EndDate, StartDate, Title, CompanyName) "+
+				"VALUES (\"%d\", \"%s\", \"%s\", \"%s\", \"%s\")",
+			p.ProfileID, p.EndDate.Time.Format("2006-01-02"), p.StartDate.Time.Format("2006-01-02"), p.Title, p.CompanyName),
+		)
+		if err != nil {
+			tx.Rollback()
+			fmt.Println(err)
+			return err
+		}
+	}
+	return tx.Commit()
 }
 
 func (s *ingestionService) parseRecord(raw string) (*models.Profile, []*models.Education, []*models.Position, error) {
@@ -88,9 +139,10 @@ func (s *ingestionService) parseRecord(raw string) (*models.Profile, []*models.E
 	skills := []string{}
 	for _, rs := range rawSkills {
 		rawSkill := rs.(map[string]interface{})
+
 		skills = append(skills, parseString(rawSkill, "skillName"))
 	}
-	profile.Skills = skills
+	profile.Skills = strings.Join(skills, "__")
 	rawEducations := ser["educations"].([]interface{})
 	educations := []*models.Education{}
 	for _, re := range rawEducations {

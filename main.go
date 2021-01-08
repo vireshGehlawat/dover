@@ -15,12 +15,12 @@ import (
 
 func main() {
 	db := sqlx.MustConnect("mysql", "root@(localhost:3306)/dover")
+	ingestion := services.New(db)
 	if len(os.Args) == 1 {
 		// init API and block to listen
 		initializeForAPIRole(db)
 	}
 	cliArguments := os.Args[1:]
-	ingestion := services.New(db)
 	if cliArguments[0] == "ingestprofiles" {
 		if len(cliArguments) < 2 {
 			fmt.Println("invalid usage of the role, sample start command\n" +

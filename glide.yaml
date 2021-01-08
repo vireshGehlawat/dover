@@ -1,0 +1,6 @@
+package: dover
+import:
+- package: github.com/gorilla/mux
+  version: ^1.8.0
+- package: github.com/pborman/uuid
+  version: ^1.2.1

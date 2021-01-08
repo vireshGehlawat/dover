@@ -41,10 +41,12 @@ func main() {
 	}
 }
 
-func initializeForAPIRole(*sqlx.DB) {
+func initializeForAPIRole(db *sqlx.DB) {
 	// add proper initialization flow for router
 	r := mux.NewRouter()
-	api.InitializeRoutes(r, api.New())
+	profilesService := services.NewProfilesService(db)
+	view := api.New(profilesService)
+	api.InitializeRoutes(r, view)
 	srv := &http.Server{
 		Handler:      r,
 		Addr:         "127.0.0.1:8000",

@@ -1,7 +1,5 @@
 package types
 
-import "github.com/pborman/uuid"
-
 type ListViewFilters struct {
 	HasCSDegree *bool
 	IsEmployed  *bool
@@ -11,7 +9,7 @@ type ListViewFilters struct {
 
 //ProfileListView is the wrapper for the list view
 type ProfileListView struct {
-	ViewID          uuid.UUID
+	ProfileID       int64
 	FullName        string
 	CurrentTitle    string
 	TotalExperience int32

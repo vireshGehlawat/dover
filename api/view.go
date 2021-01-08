@@ -1,11 +1,12 @@
 package api
 
 import (
+	"dover/services"
 	"dover/types"
 	"encoding/json"
 	"fmt"
-	"github.com/pborman/uuid"
 	"net/http"
+	"strconv"
 )
 
 type View interface {
@@ -14,10 +15,13 @@ type View interface {
 }
 
 type view struct {
+	profiles services.ProfilesService
 }
 
-func New() View {
-	return &view{}
+func New(profiles services.ProfilesService) View {
+	return &view{
+		profiles: profiles,
+	}
 }
 
 func (v *view) GetProfileList(writer http.ResponseWriter, request *http.Request) {
@@ -25,13 +29,19 @@ func (v *view) GetProfileList(writer http.ResponseWriter, request *http.Request)
 	err := request.ParseForm()
 	if err != nil {
 		// error in parsing the request
+		fmt.Println(err)
 		writer.WriteHeader(400)
 		return
 	}
 	filters := v.parseFiltersFromRequest(request)
 	fmt.Println(filters)
 	// todo get this from DB after processing filters
-	profiles := []*types.ProfileListView{}
+	profiles, err := v.profiles.GetProfiles(request.Context(), v.parseFiltersFromRequest(request))
+	if err != nil {
+		fmt.Println(err)
+		writer.WriteHeader(500)
+		return
+	}
 	v.respondWithJSON(writer, 200, profiles)
 }
 
@@ -43,19 +53,24 @@ func (v *view) GetProfile(writer http.ResponseWriter, request *http.Request) {
 	fmt.Println("received GetProfile req")
 	err := request.ParseForm()
 	if err != nil {
-		// error in parsing the request
+		fmt.Println("error in parsing the request")
 		writer.WriteHeader(400)
 		return
 	}
 	id := request.Form.Get("id")
-	viewID := uuid.Parse(id)
-	if viewID.String() == uuid.NIL.String() {
-		// error in parsing the request
+	profileID, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		fmt.Println(err)
 		writer.WriteHeader(400)
 		return
 	}
 	// todo get this from DB after processing
-	profile := &types.ProfileListView{}
+	profile, err := v.profiles.GetProfile(request.Context(), profileID)
+	if err != nil {
+		fmt.Println(err)
+		writer.WriteHeader(500)
+		return
+	}
 	v.respondWithJSON(writer, 200, profile)
 }
 

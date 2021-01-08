@@ -16,18 +16,18 @@ const PositionSchema = `create TABLE Position (
 	ProfileID int,
     Title varchar(255),
     CompanyName varchar(255),
-	EndDate date,
-	StartDate date,
+	EndDate varchar(255),
+	StartDate varchar(255),
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ProfileID) REFERENCES Profile(ID)
 );
 `
 
-const EducationSchema = `create TABLE education (
+const EducationSchema = `create TABLE Education (
 	ID int NOT NULL AUTO_INCREMENT,
 	ProfileID int,
-	EndDate date,
-	StartDate date,
+	EndDate varchar(255),
+	StartDate varchar(255),
 	DegreeName varchar(255),
 	FieldOfStudy varchar(255),
 	SchoolName varchar(255),

@@ -1,7 +1,6 @@
 package services
 
 import (
-	"database/sql"
 	"fmt"
 	"time"
 )
@@ -16,17 +15,13 @@ func parseString(raw map[string]interface{}, key string) string {
 	return raw[key].(string)
 }
 
-func parseTime(raw map[string]interface{}, key string) sql.NullTime {
+func parseTime(raw map[string]interface{}, key string) string {
 	if _, ok := raw[key]; !ok {
-		return sql.NullTime{
-			Valid: false,
-		}
+		return "0001-01-01"
 	}
 	rawTime, ok := raw[key].(map[string]interface{})
 	if !ok {
-		return sql.NullTime{
-			Valid: false,
-		}
+		return "0001-01-01"
 	}
 	year := "1"
 	month := "1"
@@ -45,12 +40,7 @@ func parseTime(raw map[string]interface{}, key string) sql.NullTime {
 	}
 	t, err := time.Parse("1-2-2006", fmt.Sprintf("%s-%s-%s", date, month, year))
 	if err != nil {
-		return sql.NullTime{
-			Valid: false,
-		}
+		return "0001-01-01"
 	}
-	return sql.NullTime{
-		Time:  t,
-		Valid: true,
-	}
+	return t.Format("2006-01-02")
 }

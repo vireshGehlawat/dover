@@ -72,7 +72,7 @@ func (s *ingestionService) Ingest(record string) error {
 			"INSERT INTO Education "+
 				"(ProfileID, EndDate, StartDate, DegreeName, FieldOfStudy, SchoolName) "+
 				"VALUES (\"%d\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\")",
-			e.ProfileID, e.EndDate.Time.Format("2006-01-02"), e.StartDate.Time.Format("2006-01-02"), e.DegreeName, e.FieldOfStudy, e.SchoolName),
+			e.ProfileID, e.EndDate, e.StartDate, e.DegreeName, e.FieldOfStudy, e.SchoolName),
 		)
 		if err != nil {
 			tx.Rollback()
@@ -87,7 +87,7 @@ func (s *ingestionService) Ingest(record string) error {
 			"INSERT INTO Position "+
 				"(ProfileID, EndDate, StartDate, Title, CompanyName) "+
 				"VALUES (\"%d\", \"%s\", \"%s\", \"%s\", \"%s\")",
-			p.ProfileID, p.EndDate.Time.Format("2006-01-02"), p.StartDate.Time.Format("2006-01-02"), p.Title, p.CompanyName),
+			p.ProfileID, p.EndDate, p.StartDate, p.Title, p.CompanyName),
 		)
 		if err != nil {
 			tx.Rollback()
